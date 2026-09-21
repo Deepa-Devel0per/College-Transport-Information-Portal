@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="Kamban College Transport Information Portal for bus routes, pickup points, timings and route search."
+  >
+
+  <meta name="theme-color" content="#2457e6">
+
+  <title>Kamban College | Transport Information Portal</title>
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- =====================================================
+         HEADER / NAVIGATION
+         ===================================================== -->
+    <header class="topbar">
+      <div class="topbar-inner">
+
+        <a href="#" class="brand" aria-label="Kamban College Transport Portal">
+          <div class="logo" aria-hidden="true">🚌</div>
+
+          <div>
+            <strong>Kamban College</strong>
+            <span>Transport Information Portal</span>
+          </div>
+        </a>
+
+        <nav class="nav" aria-label="Main navigation">
+          <button
+            type="button"
+            class="active"
+            data-view="dashboard"
+          >
+            Dashboard
+          </button>
+
+          <button
+            type="button"
+            data-view="routes"
+          >
+            Bus Routes
+          </button>
+
+          <button
+            type="button"
+            data-view="stops"
+          >
+            Pickup Points
+          </button>
+
+          <button
+            type="button"
+            data-view="finder"
+          >
+            Route Finder
+          </button>
+        </nav>
+
+        <div
+          class="clock"
+          id="clock"
+          aria-live="polite"
+        >
+          Loading time...
+        </div>
+
+      </div>
+    </header>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
+    <main>
+
+      <!-- ===================================================
+           DASHBOARD
+           =================================================== -->
+      <section
+        class="view active"
+        id="dashboard"
+        aria-labelledby="dashboard-title"
+      >
+
+        <div class="hero">
+
+          <div class="eyebrow">
+            College Transportation System
+          </div>
+
+          <h1 id="dashboard-title">
+            Travel smarter. Reach campus on time.
+          </h1>
+
+          <p>
+            Explore college bus routes, pickup locations and morning
+            timings through one simple transport information portal.
+          </p>
+
+          <div class="hero-actions">
+
+            <button
+              class="btn primary"
+              type="button"
+              onclick="openView('routes')"
+            >
+              Explore Bus Routes
+            </button>
+
+            <button
+              class="btn ghost"
+              type="button"
+              onclick="openView('finder')"
+            >
+              Find My Route
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- Dashboard statistics -->
+        <div class="stats">
+
+          <div class="stat">
+            <div class="icon" aria-hidden="true">🚌</div>
+            <strong id="busCount">0</strong>
+            <span>Active Routes</span>
+          </div>
+
+          <div class="stat">
+            <div class="icon" aria-hidden="true">📍</div>
+            <strong id="stopCount">0</strong>
+            <span>Pickup Entries</span>
+          </div>
+
+          <div class="stat">
+            <div class="icon" aria-hidden="true">⏰</div>
+            <strong id="firstTime">--:--</strong>
+            <span>Earliest Pickup</span>
+          </div>
+
+          <div class="stat">
+            <div class="icon" aria-hidden="true">🗺️</div>
+            <strong id="coverage">0</strong>
+            <span>Route Corridors</span>
+          </div>
+
+        </div>
+
+
+        <!-- Quick search -->
+        <div class="panel">
+
+          <div class="panel-head">
+            <div>
+              <h2>Quick Route Search</h2>
+              <div class="sub">
+                Search by bus number, town, route or pickup point.
+              </div>
+            </div>
+          </div>
+
+          <div class="search-row">
+
+            <input
+              class="input"
+              id="quickSearch"
+              type="search"
+              placeholder="Try: Tirukoilur, KB-01, Bus Stand..."
+              aria-label="Search routes"
+            >
+
+            <select
+              class="select"
+              id="timeFilter"
+              aria-label="Filter by pickup time"
+            >
+              <option value="all">Any pickup time</option>
+              <option value="early">Before 07:00 AM</option>
+              <option value="mid">07:00 AM – 08:00 AM</option>
+              <option value="late">After 08:00 AM</option>
+            </select>
+
+            <select
+              class="select"
+              id="sortFilter"
+              aria-label="Sort search results"
+            >
+              <option value="default">Default order</option>
+              <option value="early">Earliest first</option>
+              <option value="late">Latest first</option>
+            </select>
+
+            <button
+              class="btn-blue"
+              type="button"
+              onclick="quickSearch()"
+            >
+              Search
+            </button>
+
+          </div>
+
+          <div style="margin-top:10px">
+            <button
+              class="mini-btn"
+              type="button"
+              onclick="clearSearch()"
+            >
+              Clear filters
+            </button>
+          </div>
+
+        </div>
+
+
+        <!-- Featured routes -->
+        <div class="panel">
+
+          <div class="panel-head">
+
+            <div>
+              <h2>Featured Routes</h2>
+              <div class="sub">
+                A quick view of available college transport corridors.
+              </div>
+            </div>
+
+            <button
+              class="mini-btn"
+              type="button"
+              onclick="openView('routes')"
+            >
+              View all
+            </button>
+
+          </div>
+
+          <div
+            class="route-grid"
+            id="featuredGrid"
+          >
+            <!-- JavaScript renders route cards -->
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           BUS ROUTES
+           =================================================== -->
+      <section
+        class="view"
+        id="routes"
+        aria-labelledby="routes-title"
+      >
+
+        <div class="panel">
+
+          <div class="panel-head">
+
+            <div>
+              <h2 id="routes-title">Bus Route Directory</h2>
+
+              <div class="sub">
+                Browse and filter the college transport routes.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="search-row">
+
+            <input
+              class="input"
+              id="routeSearch"
+              type="search"
+              placeholder="Search route, town, bus or pickup..."
+              aria-label="Search bus routes"
+              oninput="renderRoutes()"
+            >
+
+            <select
+              class="select"
+              id="routeSelect"
+              aria-label="Filter route corridor"
+              onchange="renderRoutes()"
+            >
+              <option value="all">All corridors</option>
+            </select>
+
+            <select
+              class="select"
+              id="routeSort"
+              aria-label="Sort routes"
+              onchange="renderRoutes()"
+            >
+              <option value="default">Default order</option>
+              <option value="early">Earliest pickup</option>
+              <option value="name">Route name</option>
+            </select>
+
+            <button
+              class="btn-blue"
+              type="button"
+              onclick="
+                document.getElementById('routeSearch').value='';
+                document.getElementById('routeSelect').value='all';
+                document.getElementById('routeSort').value='default';
+                renderRoutes();
+              "
+            >
+              Reset
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="route-grid"
+          id="routesGrid"
+        >
+          <!-- JavaScript renders routes -->
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           PICKUP POINTS
+           =================================================== -->
+      <section
+        class="view"
+        id="stops"
+        aria-labelledby="stops-title"
+      >
+
+        <div class="panel">
+
+          <div class="panel-head">
+
+            <div>
+              <h2 id="stops-title">Pickup Points & Timings</h2>
+
+              <div class="sub">
+                Check pickup sequence and scheduled morning timings.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="search-row">
+
+            <input
+              class="input"
+              id="stopSearch"
+              type="search"
+              placeholder="Search pickup point or bus..."
+              aria-label="Search pickup points"
+              oninput="renderStops()"
+            >
+
+            <select
+              class="select"
+              id="stopRoute"
+              aria-label="Filter pickup points by route"
+              onchange="renderStops()"
+            >
+              <option value="all">All routes</option>
+            </select>
+
+            <div></div>
+
+            <button
+              class="btn-blue"
+              type="button"
+              onclick="
+                document.getElementById('stopSearch').value='';
+                document.getElementById('stopRoute').value='all';
+                renderStops();
+              "
+            >
+              Reset
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="panel">
+
+          <div class="table-wrap">
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Pickup Point</th>
+                  <th>Bus</th>
+                  <th>Route</th>
+                  <th>Time</th>
+                  <th>Sequence</th>
+                </tr>
+              </thead>
+
+              <tbody id="stopTable">
+                <!-- JavaScript renders timetable -->
+              </tbody>
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           ROUTE FINDER
+           =================================================== -->
+      <section
+        class="view"
+        id="finder"
+        aria-labelledby="finder-title"
+      >
+
+        <div class="panel">
+
+          <div class="panel-head">
+
+            <div>
+              <h2 id="finder-title">Route Finder</h2>
+
+              <div class="sub">
+                Enter your town or pickup point to locate the matching route.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="search-row">
+
+            <input
+              class="input"
+              id="finderInput"
+              type="search"
+              placeholder="Example: Tirukoilur Bus Stand"
+              aria-label="Enter a town or pickup point"
+              onkeydown="
+                if(event.key === 'Enter'){
+                  findRoute();
+                }
+              "
+            >
+
+            <div></div>
+            <div></div>
+
+            <button
+              class="btn-blue"
+              type="button"
+              onclick="findRoute()"
+            >
+              Find Route
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div id="finderResult">
+          <div class="panel empty">
+            Enter a location above to see the route and pickup sequence.
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         ROUTE DETAILS MODAL
+         ===================================================== -->
+    <div
+      class="modal"
+      id="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
+
+      <div class="modal-box">
+
+        <div class="modal-head">
+
+          <div>
+            <h2 id="modalTitle">
+              Route Details
+            </h2>
+          </div>
+
+          <button
+            class="close"
+            type="button"
+            onclick="closeModal()"
+            aria-label="Close route details"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div id="modalBody">
+          <!-- JavaScript inserts route details -->
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TOAST
+         ===================================================== -->
+    <div
+      class="toast"
+      id="toast"
+      role="status"
+      aria-live="polite"
+    ></div>
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+    <footer class="footer">
+      <p>
+        Kamban College of Arts and Science for Women
+        · College Transport Information Portal
+      </p>
+
+      <p style="margin-top:5px">
+        Academic Web Development Project
+      </p>
+    </footer>
+
+  </div>
+
+
+  <!-- Main JavaScript -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>
